@@ -1,0 +1,11 @@
+streamlit==1.50.0
+pandas
+numpy
+plotly
+openpyxl
+matplotlib
+networkx
+rdkit
+glypy
+pyarrow
+pydeck
