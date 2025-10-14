@@ -139,11 +139,11 @@ if submit_button:
         st.markdown("##### Assigned peak differences")
         st.dataframe(df_diffs_assigned)
 
-        st.markdown("##### Unassigned peak differences")
-        st.dataframe(df_diffs_unassigned)
+        with st.expander("Unassigned peak differences", expanded=False):
+            st.dataframe(df_diffs_unassigned)
 
-        st.markdown("##### Unmatched peaks")
-        st.dataframe(df_unmatched)
+        with st.expander("Unmatched peaks", expanded=False):
+            st.dataframe(df_unmatched)
 
         st.markdown("##### Peak losses")
         st.write("Little green dots represent peaks.")
