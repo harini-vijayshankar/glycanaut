@@ -1,0 +1,186 @@
+import pandas as pd
+import networkx as nx
+
+import plotly.graph_objects as go
+from plotly.graph_objs import Figure
+
+from typing import Tuple, List
+
+
+def plot_mass_spectrum(df: pd.DataFrame) -> Figure:
+    """
+    Plot a mass spectrum from a DataFrame containing "m/z" and "Intensity" columns.
+    """
+    fig = go.Figure()
+
+    for x, y in zip(df["m/z"], df["Intensity"]):
+        fig.add_trace(
+            go.Scatter(
+                x=[x, x],
+                y=[0, y],
+                mode="lines+text",
+                line=dict(color="grey", width=2),
+                text=[None, f"{x:.2f}"],
+                textposition="top center",
+                showlegend=False,
+            )
+        )
+
+    fig.update_layout(
+        xaxis_title="m/z",
+        yaxis_title="Intensity",
+        template="simple_white",
+        height=300,
+        margin=dict(l=40, r=40, t=20, b=40),
+    )
+
+    fig.update_traces(hoverinfo="skip")
+
+    return fig
+
+
+def plot_peak_diff_graph(df_assigned: pd.DataFrame) -> Figure:
+    """
+    Plot a network graph of assigned peak differences.
+    """
+    G = nx.from_pandas_edgelist(
+        df_assigned,
+        "Peak 1",
+        "Peak 2",
+        edge_attr=["Peak Difference", "Assigned Symbol"],
+    )
+    pos = nx.spring_layout(G)
+
+    edge_x, edge_y = [], []
+    for u, v in G.edges():
+        x0, y0 = pos[u]
+        x1, y1 = pos[v]
+        edge_x += [x0, x1, None]
+        edge_y += [y0, y1, None]
+
+    edge_trace = go.Scatter(
+        x=edge_x,
+        y=edge_y,
+        mode="lines",
+        line=dict(width=1, color="#888"),
+        opacity=0.2,
+        hoverinfo="none",
+    )
+    node_x, node_y, node_text = zip(
+        *[(pos[n][0], pos[n][1], str(n)) for n in G.nodes()]
+    )
+    node_trace = go.Scatter(
+        x=node_x,
+        y=node_y,
+        mode="markers+text",
+        marker=dict(size=3, color="#669673"),
+        text=node_text,
+        textposition="top center",
+    )
+
+    fig = go.Figure([edge_trace, node_trace])
+    for u, v, attr in G.edges(data=True):
+        x0, y0 = pos[u]
+        x1, y1 = pos[v]
+        label = attr.get("Assigned Symbol", "")
+        fig.add_annotation(
+            x=(x0 + x1) / 2,
+            y=(y0 + y1) / 2,
+            text=label,
+            showarrow=False,
+            font=dict(size=50, color="grey"),
+        )
+    fig.update_layout(
+        showlegend=False,
+        xaxis_visible=False,
+        yaxis_visible=False,
+        margin=dict(l=20, r=20, t=20, b=20),
+    )
+    return fig
+
+
+def generate_glycan_graph(G: nx.Graph) -> Tuple[List, List]:
+
+    # Example node / edge list:
+    # nodes = [
+    #     {"x": 0, "y": 0, "label": "GlcNAc", "color": "orange"},
+    #     {"x": 1, "y": 0, "label": "Man", "color": "green"},
+    #     {"x": 2, "y": 0, "label": "Man", "color": "green"},
+    # ]
+    # edges = [(0, 1), (1, 2)]
+
+    nodes = []
+    edges = []
+    smallest_peak = min(G.nodes)
+    largest_peak = max(G.nodes)
+    backbone = nx.shortest_path(G, source=largest_peak, target=smallest_peak)
+    branches = {}
+    for i in range(len(backbone) - 1):
+        node = backbone[i]
+        nodes.append(
+            {
+                "x": i,
+                "y": 0,
+                "label": G.edges[backbone[i], backbone[i + 1]]["Assigned Symbol"],
+            }
+        )
+        deg = G.degree(node)
+        if deg > 2:
+            neighbors = list(G.neighbors(node))
+            for n in neighbors:
+                if n not in backbone:
+                    for path in nx.all_simple_paths(G, source=node, target=n):
+                        for j in range(len(path) - 1):
+                            nodes.append(
+                                {
+                                    "x": i,
+                                    "y": j + 1,
+                                    "label": G.edges[path[j], backbone[j + 1]][
+                                        "Assigned Symbol"
+                                    ],
+                                }
+                            )
+
+    return nodes, edges
+
+
+def plot_glycan(nodes: List, edges: List) -> Figure:
+    fig = go.Figure()
+
+    for i, j in edges:
+        fig.add_shape(
+            type="line",
+            x0=nodes[i]["x"],
+            y0=nodes[i]["y"],
+            x1=nodes[j]["x"],
+            y1=nodes[j]["y"],
+            line=dict(color="black", width=2),
+            layer="below",
+        )
+
+    fig.add_trace(
+        go.Scatter(
+            x=[n["x"] for n in nodes],
+            y=[n["y"] for n in nodes],
+            mode="markers+text",
+            marker=dict(
+                size=40,
+                color=[n["color"] for n in nodes],
+                line=dict(color="black", width=1),
+            ),
+            text=[n["label"] for n in nodes],
+            textposition="bottom center",
+            hovertext=[n["label"] for n in nodes],
+            hoverinfo="text",
+        )
+    )
+
+    fig.update_layout(
+        showlegend=False,
+        xaxis=dict(visible=False),
+        yaxis=dict(visible=False),
+        width=600,
+        height=400,
+    )
+
+    return fig
