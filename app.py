@@ -123,7 +123,7 @@ if submit_button:
     df = analysis.preprocess_data(
         df, threshold=threshold, m_z_range=m_z_range, isotope_tol=isotope_tol
     )
-    df_diffs, df_diffs_assigned, df_unmatched = analysis.compute_peak_differences(
+    df_diffs, df_diffs_assigned, df_diffs_unassigned, df_unmatched = analysis.compute_peak_differences(
         df, df_mono, mass_tol=mass_tol
     )
 
@@ -138,6 +138,9 @@ if submit_button:
 
         st.markdown("##### Assigned peak differences")
         st.dataframe(df_diffs_assigned)
+
+        st.markdown("##### Unassigned peak differences")
+        st.dataframe(df_diffs_unassigned)
 
         st.markdown("##### Unmatched peaks")
         st.dataframe(df_unmatched)

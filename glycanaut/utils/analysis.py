@@ -49,29 +49,43 @@ def compute_peak_differences(
     data = []
     for a, b in combinations(df["m/z"], 2):
         diff = abs(a - b)
-        match = df_mono[abs(df_mono["m/z"] - diff) < mass_tol]
-        if not match.empty:
-            row = match.iloc[0]  # just takes first. hmmm
-            data.append(
-                {
-                    "Peak 1": a,
-                    "Peak 2": b,
-                    "Peak Difference": diff,
-                    "Assigned": row["name"],
-                    "Assigned Symbol": row["symbol"],
-                    "Assigned Mass": row["m/z"],
-                }
+        diff_dict = {"Peak 1": a, "Peak 2": b, "Peak Difference": diff}
+        if diff >= df_mono["m/z"].min():
+            mono_sacc = df_mono[abs(df_mono["m/z"] - diff) < mass_tol]
+            assigned = (
+                (
+                    mono_sacc.iloc[0]["name"],
+                    mono_sacc.iloc[0]["m/z"],
+                    mono_sacc.iloc[0]["symbol"],
+                )
+                if not mono_sacc.empty
+                else ("No match", 0, "")
             )
-    df_diffs = pd.DataFrame(data).sort_values("Assigned Mass", ascending=False)
+            diff_dict = diff_dict | {
+                "Assigned": assigned[0],
+                "Assigned Symbol": assigned[2],
+                "Assigned Mass": assigned[1],
+            }
+        else:
+            diff_dict = diff_dict | {
+                "Assigned": "Too small",
+                "Assigned Symbol": "",
+                "Assigned Mass": 0,
+            }
+        data.append(diff_dict)
+
+    df_diffs = pd.DataFrame(data)
+
+    df_diffs = df_diffs.sort_values("Assigned Mass", ascending=False)
     df_diffs_assigned = df_diffs[df_diffs["Assigned Mass"] != 0].reset_index(drop=True)
-    
+    df_diffs_unassigned = df_diffs[df_diffs["Assigned Mass"] == 0].reset_index(drop=True)
     df_unmatched = df[
         ~df["m/z"].isin(df_diffs_assigned["Peak 1"])
         & ~df["m/z"].isin(df_diffs_assigned["Peak 2"])
     ].reset_index(drop=True)
     df_unmatched = df_unmatched.drop(columns=["index"])
-    
-    return df_diffs, df_diffs_assigned, df_unmatched
+
+    return df_diffs, df_diffs_assigned, df_diffs_unassigned, df_unmatched
 
 
 def all_combinations(weights, target, idx=0, current=None):

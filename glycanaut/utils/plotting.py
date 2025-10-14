@@ -12,6 +12,8 @@ def plot_mass_spectrum(df: pd.DataFrame) -> Figure:
     Plot a mass spectrum from a DataFrame containing "m/z" and "Intensity" columns.
     """
     fig = go.Figure()
+    if df.empty:
+        return fig
 
     for x, y in zip(df["m/z"], df["Intensity"]):
         fig.add_trace(
@@ -43,6 +45,17 @@ def plot_peak_diff_graph(df_assigned: pd.DataFrame) -> Figure:
     """
     Plot a network graph of assigned peak differences.
     """
+
+    if df_assigned.empty:
+        fig = go.Figure()
+        fig.update_layout(
+            showlegend=False,
+            xaxis_visible=False,
+            yaxis_visible=False,
+            margin=dict(l=20, r=20, t=20, b=20),
+        )
+        return fig
+
     G = nx.from_pandas_edgelist(
         df_assigned,
         "Peak 1",
