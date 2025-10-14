@@ -5,7 +5,12 @@ from glycanaut.utils import plotting, analysis, mono
 
 # ----------------------- Layout config ----------------------- #
 
-st.set_page_config(layout="wide")
+st.set_page_config(
+    page_title="Glycanaut",
+    page_icon="🍩",    
+    layout="wide"
+)
+
 st.markdown(
     """
     <style>
