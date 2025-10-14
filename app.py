@@ -50,6 +50,16 @@ xls_sheet_name = st.sidebar.empty()
 with st.sidebar.expander("Parameters", expanded=st.session_state.expander_open):
     with st.form("process_form"):
         m_z_range_c = st.empty()
+        with m_z_range_c.container():
+            min_m_z = 0 if "m_z_range_min" not in st.session_state else st.session_state.m_z_range_min
+            max_m_z = 5000 if "m_z_range_max" not in st.session_state else st.session_state.m_z_range_max
+            m_z_range_val = (min_m_z, max_m_z) if "m_z_range" not in st.session_state else st.session_state.m_z_range
+            m_z_range = st.slider(
+                    "m/z Range",
+                    min_value=min_m_z,
+                    max_value=max_m_z,
+                    value=m_z_range_val,
+                )
         threshold = st.slider(
             "Threshold %", min_value=1, max_value=99, value=15, step=1
         )
@@ -103,6 +113,9 @@ if uploaded_spectrum_file:
                 max_value=max_m_z,
                 value=(min_m_z, max_m_z),
             )
+            st.session_state.m_z_range_min = min_m_z
+            st.session_state.m_z_range_max = max_m_z
+            st.session_state.m_z_range = (min_m_z, max_m_z)
         except:
             pass
 
