@@ -140,6 +140,10 @@ if submit_button:
         df, df_mono, mass_tol=mass_tol
     )
 
+    if df_diffs is None:
+        st.error("No peaks found. Check the spectrum file / widen the m/z range / reduce the threshold and try again.")
+        st.stop()
+
     with top:
         st.subheader("Mass spectrum")
         st.plotly_chart(plotting.plot_mass_spectrum(df), use_container_width=True)
@@ -162,7 +166,7 @@ if submit_button:
             st.dataframe(df_unmatched)
 
         st.markdown("##### Peak losses")
-        st.write("Little green dots represent peaks.")
+        st.write("Little green dots represent peaks. The green path highlighted shows the shortest path between the largest and smallest peaks.")
         st.plotly_chart(
             plotting.plot_peak_diff_graph(df_diffs_assigned), use_container_width=True
         )

@@ -117,21 +117,30 @@ def plot_peak_diff_graph(df_assigned: pd.DataFrame) -> Figure:
     )
     pos = nx.spring_layout(G)
 
-    edge_x, edge_y = [], []
+    smallest_peak = min(G.nodes)
+    largest_peak = max(G.nodes)
+    backbone = nx.shortest_path(G, source=largest_peak, target=smallest_peak)
+    backbone_edges = list(zip(backbone[:-1], backbone[1:]))
+
+    edge_x, edge_y, edge_colors, opacities = [], [], [], []
     for u, v in G.edges():
         x0, y0 = pos[u]
         x1, y1 = pos[v]
         edge_x += [x0, x1, None]
         edge_y += [y0, y1, None]
+        edge_colors.append("#669673" if (u,v) in backbone_edges or (v,u) in backbone_edges else "grey")
+        opacities.append(0.8 if (u,v) in backbone_edges or (v,u) in backbone_edges else 0.2)
 
-    edge_trace = go.Scatter(
-        x=edge_x,
-        y=edge_y,
-        mode="lines",
-        line=dict(width=1, color="#888"),
-        opacity=0.2,
-        hoverinfo="none",
-    )
+    edge_traces = []
+    for i in range(len(G.edges())):
+        edge_traces.append(go.Scatter(
+            x=edge_x[i*3:i*3+2], y=edge_y[i*3:i*3+2],
+            line=dict(width=1, color=edge_colors[i]),
+            hoverinfo='none',
+            opacity=opacities[i],
+            mode='lines'
+        ))
+
     node_x, node_y, node_text = zip(
         *[(pos[n][0], pos[n][1], str(n)) for n in G.nodes()]
     )
@@ -144,7 +153,7 @@ def plot_peak_diff_graph(df_assigned: pd.DataFrame) -> Figure:
         textposition="top center",
     )
 
-    fig = go.Figure([edge_trace, node_trace])
+    fig = go.Figure(data=edge_traces + [node_trace])
     for u, v, attr in G.edges(data=True):
         x0, y0 = pos[u]
         x1, y1 = pos[v]
@@ -154,7 +163,7 @@ def plot_peak_diff_graph(df_assigned: pd.DataFrame) -> Figure:
             y=(y0 + y1) / 2,
             text=label,
             showarrow=False,
-            font=dict(size=50, color="grey"),
+            font=dict(size=40, color="grey"),
         )
     fig.update_layout(
         showlegend=False,
