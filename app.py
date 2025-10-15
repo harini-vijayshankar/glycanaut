@@ -77,6 +77,15 @@ with st.sidebar.expander("Parameters", expanded=st.session_state.expander_open):
             max_value=100.0,
             min_value=0.00001,
         )
+        length = st.number_input(
+            "Polysaccharide length to match",
+            value=1,
+            step=1,
+            max_value=8,
+            min_value=1,
+        )
+        use_mods = st.checkbox("Use modifications", value=False)
+        use_b_y = st.checkbox("Detect B / Y ions", value=False)
         with st.sidebar:
             submit_button = st.form_submit_button("Analyse")
 
@@ -137,7 +146,7 @@ if submit_button:
         df, threshold=threshold, m_z_range=m_z_range, isotope_tol=isotope_tol
     )
     df_diffs, df_diffs_assigned, df_diffs_unassigned, df_unmatched = analysis.compute_peak_differences(
-        df, df_mono, mass_tol=mass_tol
+        df, df_mono, mass_tol=mass_tol, length=length, use_mods=use_mods
     )
 
     if df_diffs is None:
@@ -151,6 +160,10 @@ if submit_button:
     with bottom:
         with st.expander("SNFG Reference", expanded=False):
             st.dataframe(df_mono)
+
+        with st.expander("Modifications", expanded=False):
+            st.dataframe(mono.MODS.drop(columns=["ion_type"]))
+            
         st.subheader("MS2 Identification")
 
         st.markdown("##### Overview of peak differences")

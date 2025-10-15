@@ -1,19 +1,31 @@
 import pandas as pd
 from itertools import combinations
-from typing import Tuple
-
+from typing import Tuple, List
+import itertools
+from . import mono
 
 def prune_isotopes(df: pd.DataFrame, isotope_tol: float = 1.0) -> pd.DataFrame:
     """
     If isotopes within prescribed tolerance exist, retain only that with the smallest m/z.
     """
+    charge_states = range(1, 6)
+    tol = 1e-3
     df = df.sort_values("m/z").reset_index(drop=True)
     to_drop = []
     for i in range(len(df) - 1):
         j = i + 1
+        diffs = []
         while j < len(df) and abs(df.loc[i, "m/z"] - df.loc[j, "m/z"]) < isotope_tol:
+            diffs.append(abs(df.loc[i, "m/z"] - df.loc[j, "m/z"]))
             to_drop.append(j)
             j += 1
+        matches = [
+            z
+            for z in charge_states
+            if all(abs((1 / z) - diff) <= tol for diff in diffs)
+        ]
+        df.loc[i, "z"] = 1 if not matches else matches[0]  # sort later.
+
     return df.drop(to_drop).reset_index(drop=True)
 
 
@@ -40,47 +52,123 @@ def preprocess_data(
     return df
 
 
+def generate_polysaccharides(
+    df_mono: pd.DataFrame, monosaccharide_list: List[str], length: int = 1
+) -> pd.DataFrame:
+    """
+    Generate n-length combinations of monosaccharides in the list provided.
+    """
+    df_mono.set_index("name", inplace=True)
+    data = []
+    polysaccharides = []
+    for r in range(2, length + 1):
+        polysaccharides.extend(
+            itertools.combinations_with_replacement(monosaccharide_list, r)
+        )
+    for poly_sacc in polysaccharides:
+        item = {
+            "name": "",
+            "symbol": "",
+            "m/z": 0,
+            "symbol_description": "Polysaccharide",
+            "ion_type": "",
+        }
+        for mono_sacc in poly_sacc:
+            df_mono_sacc = df_mono.loc[mono_sacc]
+            item["name"] += df_mono_sacc.name + " - "
+            item["symbol"] += df_mono_sacc["symbol"] + " - "
+            item["m/z"] += df_mono_sacc["m/z"]
+            item["ion_type"] += df_mono_sacc["ion_type"]
+        item["name"] = item["name"][:-3]
+        item["symbol"] = item["symbol"][:-3]
+        item["length"] = len(poly_sacc)
+        item["type"] = "Polysaccharide"
+        data.append(item)
+    return pd.DataFrame(data)
+
+
+def assign_polysaccharides(
+    df_diffs: pd.DataFrame,
+    df_mono: pd.DataFrame,
+    length: int = 1,
+    mass_tol: float = 1.0,
+):
+    """
+    Assign peak differences for polysaccharides of length >= 2.
+    """
+    if length > 1:
+        monosaccharide_list = df_diffs[df_diffs["Assigned Mass"] != 0][
+            "Assigned"
+        ].unique()
+        df_poly = generate_polysaccharides(df_mono, monosaccharide_list, length)
+        for idx, row in df_diffs.iterrows():
+            if row["Assigned Mass"] != 0:
+                continue
+            diff = row["Peak Difference"]
+            if diff >= df_poly["m/z"].min():
+                poly_sacc = df_poly[abs(df_poly["m/z"] - diff) < mass_tol]
+                if not poly_sacc.empty:
+                    poly_row = poly_sacc.iloc[0]
+                    df_diffs.loc[idx, "Assigned"] = poly_row["name"]
+                    df_diffs.loc[idx, "Assigned Symbol"] = poly_row["symbol"]
+                    df_diffs.loc[idx, "Assigned Mass"] = poly_row["m/z"]
+                    df_diffs.loc[idx, "Ion Type"] = poly_row["ion_type"]
+                    df_diffs.loc[idx, "Length"] = poly_row["length"]
+                    df_diffs.loc[idx, "Type"] = poly_row["type"]
+    df_diffs_assigned = df_diffs[df_diffs["Assigned Mass"] != 0].reset_index(drop=True)
+    df_diffs_unassigned = df_diffs[df_diffs["Assigned Mass"] == 0].reset_index(
+        drop=True
+    )
+    return df_diffs_assigned, df_diffs_unassigned
+
+
 def compute_peak_differences(
-    df: pd.DataFrame, df_mono: pd.DataFrame, mass_tol: float
+    df: pd.DataFrame, df_mono: pd.DataFrame, mass_tol: float, length: int = 1, use_mods: bool = False, use_b_y: bool = False
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Compute peak differences for input spectrum and assign wherever possible.
     """
     data = []
+
+    df_mono = df_mono if not use_b_y else mono.make_b_y_df_mono(df_mono)
+    df_mono = df_mono if not use_mods else pd.concat([df_mono, mono.MODS])
+
     for a, b in combinations(df["m/z"], 2):
         diff = abs(a - b)
-        diff_dict = {"Peak 1": a, "Peak 2": b, "Peak Difference": diff}
+        diff_dict = {
+            "Peak 1": a,
+            "Peak 2": b,
+            "Peak Difference": diff,
+        }
         if diff >= df_mono["m/z"].min():
             mono_sacc = df_mono[abs(df_mono["m/z"] - diff) < mass_tol]
-            assigned = (
-                (
-                    mono_sacc.iloc[0]["name"],
-                    mono_sacc.iloc[0]["m/z"],
-                    mono_sacc.iloc[0]["symbol"],
-                )
-                if not mono_sacc.empty
-                else ("No match", 0, "")
-            )
-            diff_dict = diff_dict | {
-                "Assigned": assigned[0],
-                "Assigned Symbol": assigned[2],
-                "Assigned Mass": assigned[1],
-            }
+            if not mono_sacc.empty:
+                row = mono_sacc.iloc[0]
+                assigned = (row["name"], row["symbol"], row["m/z"], row["ion_type"], row["type"])
+            else:
+                assigned = ("No match", "", 0, "", "")
         else:
-            diff_dict = diff_dict | {
-                "Assigned": "Too small",
-                "Assigned Symbol": "",
-                "Assigned Mass": 0,
-            }
+            assigned = ("Too small", "", 0, "", "")
+        diff_dict |= {
+            "Assigned": assigned[0],
+            "Assigned Symbol": assigned[1],
+            "Assigned Mass": assigned[2],
+            "Ion Type": assigned[3],
+            "Type": assigned[4],
+            "Length": 1,
+        }
         data.append(diff_dict)
 
     df_diffs = pd.DataFrame(data)
 
     if not df_diffs.empty:
         df_diffs = df_diffs.sort_values("Assigned Mass", ascending=False)
-        df_diffs_assigned = df_diffs[df_diffs["Assigned Mass"] != 0].reset_index(drop=True)
-        df_diffs_unassigned = df_diffs[df_diffs["Assigned Mass"] == 0].reset_index(drop=True)
-        df_diffs_unassigned = df_diffs_unassigned.drop(columns=["Assigned", "Assigned Mass", "Assigned"])
+        df_diffs_assigned, df_diffs_unassigned = assign_polysaccharides(
+            df_diffs, df_mono, length, mass_tol
+        )
+        df_diffs_unassigned = df_diffs_unassigned.drop(
+            columns=["Assigned", "Assigned Mass", "Assigned", "Ion Type", "Type"]
+        )
         df_unmatched = df[
             ~df["m/z"].isin(df_diffs_assigned["Peak 1"])
             & ~df["m/z"].isin(df_diffs_assigned["Peak 2"])

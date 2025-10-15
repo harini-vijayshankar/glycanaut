@@ -51,7 +51,7 @@ def plot_peak_diff_histogram(df_diffs: pd.DataFrame, df_diffs_assigned: pd.DataF
 
     assigned_info = (
         df_diffs.groupby("Peak Difference (rounded)")
-        .agg(Assigned=("Assigned", "first"))
+        .agg(Assigned=("Assigned Symbol", "first"))
         .reset_index()
     )
     assigned_info["Peak Difference"] = assigned_info["Peak Difference (rounded)"]
@@ -110,7 +110,7 @@ def plot_peak_diff_graph(df_assigned: pd.DataFrame) -> Figure:
         return fig
 
     G = nx.from_pandas_edgelist(
-        df_assigned,
+        df_assigned[df_assigned["Type"] != "Modification"],
         "Peak 1",
         "Peak 2",
         edge_attr=["Peak Difference", "Assigned Symbol"],
@@ -163,7 +163,7 @@ def plot_peak_diff_graph(df_assigned: pd.DataFrame) -> Figure:
             y=(y0 + y1) / 2,
             text=label,
             showarrow=False,
-            font=dict(size=40, color="grey"),
+            font=dict(size=30, color="grey"),
         )
     fig.update_layout(
         showlegend=False,
