@@ -146,7 +146,7 @@ if submit_button:
         df, threshold=threshold, m_z_range=m_z_range, isotope_tol=isotope_tol
     )
     df_diffs, df_diffs_assigned, df_diffs_unassigned, df_unmatched = analysis.compute_peak_differences(
-        df, df_mono, mass_tol=mass_tol, length=length, use_mods=use_mods
+        df, df_mono, mass_tol=mass_tol, length=length, use_mods=use_mods, use_b_y=use_b_y
     )
 
     if df_diffs is None:
