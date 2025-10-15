@@ -149,6 +149,9 @@ if submit_button:
             st.dataframe(df_mono)
         st.subheader("MS2 Identification")
 
+        st.markdown("##### Overview of peak differences")
+        st.plotly_chart(plotting.plot_peak_diff_histogram(df_diffs, df_diffs_assigned))
+
         st.markdown("##### Assigned peak differences")
         st.dataframe(df_diffs_assigned)
 

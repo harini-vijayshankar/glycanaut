@@ -79,6 +79,7 @@ def compute_peak_differences(
     df_diffs = df_diffs.sort_values("Assigned Mass", ascending=False)
     df_diffs_assigned = df_diffs[df_diffs["Assigned Mass"] != 0].reset_index(drop=True)
     df_diffs_unassigned = df_diffs[df_diffs["Assigned Mass"] == 0].reset_index(drop=True)
+    df_diffs_unassigned = df_diffs_unassigned.drop(columns=["Assigned", "Assigned Mass", "Assigned"])
     df_unmatched = df[
         ~df["m/z"].isin(df_diffs_assigned["Peak 1"])
         & ~df["m/z"].isin(df_diffs_assigned["Peak 2"])

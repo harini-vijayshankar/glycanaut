@@ -8,6 +8,8 @@
     {"name": "Pentose", "m/z": 151.13, "symbol_description": "Filled Star", "symbol": "\u2605"},
     {"name": "3-deoxy-nonulosonic acids", "m/z": 269.22, "symbol_description": "Filled Diamond", "symbol": "\u25C6"},
     {"name": "3,9-dideoxy-nonulosonic acids", "m/z": 251.25, "symbol_description": "Flat Diamond", "symbol": "\u25C7"},
+    {"name": "Glycerophosphogalactose", "m/z": 334.09, "symbol_description": "-", "symbol": "◍"},
+    {"name": "Glycerophosphoacetate", "m/z": 376.10, "symbol_description": "-", "symbol": "◎"},
     {"name": "Unknown", "m/z": -1, "symbol_description": "Flat Hexagon", "symbol": "\u2B22"},
     {"name": "Assigned", "m/z": -1, "symbol_description": "Pentagon", "symbol": "\u2B1F"}
 ]

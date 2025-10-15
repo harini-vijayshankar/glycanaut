@@ -41,6 +41,59 @@ def plot_mass_spectrum(df: pd.DataFrame) -> Figure:
     return fig
 
 
+def plot_peak_diff_histogram(df_diffs: pd.DataFrame, df_diffs_assigned: pd.DataFrame) -> Figure:
+    """
+    Plot histogram of peak differences and annotate wherever assigned.
+    """
+    df_diffs["Peak Difference (rounded)"] = df_diffs["Peak Difference"].round(1)
+    counts = df_diffs["Peak Difference (rounded)"].value_counts().sort_index().reset_index()
+    counts.columns = ["Peak Difference", "Count"]
+
+    assigned_info = (
+        df_diffs.groupby("Peak Difference (rounded)")
+        .agg(Assigned=("Assigned", "first"))
+        .reset_index()
+    )
+    assigned_info["Peak Difference"] = assigned_info["Peak Difference (rounded)"]
+    counts = counts.merge(assigned_info, on="Peak Difference", how="left")
+
+    assigned = counts[counts["Peak Difference"].isin(df_diffs_assigned["Peak Difference"].round(1))]
+    unassigned = counts[~counts["Peak Difference"].isin(df_diffs_assigned["Peak Difference"].round(1))]
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Bar(
+        x=assigned["Peak Difference"],
+        y=assigned["Count"],
+        name="Assigned",
+        marker_color="#669673",
+        text=assigned["Assigned"],
+        hovertemplate=
+            'Peak Difference: %{x}<br>' +
+            'Count: %{y}<br>' +
+            'Assigned: %{text}<extra></extra>'
+    ))
+
+    fig.add_trace(go.Bar(
+        x=unassigned["Peak Difference"],
+        y=unassigned["Count"],
+        name="Not assigned",
+        marker_color="white",
+        hovertemplate=
+            'Peak Difference: %{x}<br>' +
+            'Count: %{y}<br>' +
+            'Assigned: None<extra></extra>'
+    ))
+
+    fig.update_layout(
+        xaxis_title="Peak Differences",
+        yaxis_title="Count",
+        margin=dict(l=40, r=40, t=20, b=40),
+        showlegend=True
+    )
+
+    return fig
+
 def plot_peak_diff_graph(df_assigned: pd.DataFrame) -> Figure:
     """
     Plot a network graph of assigned peak differences.
