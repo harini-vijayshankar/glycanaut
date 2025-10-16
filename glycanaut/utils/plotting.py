@@ -130,8 +130,11 @@ def plot_peak_diff_graph(df_assigned: pd.DataFrame) -> Figure:
 
     smallest_peak = min(G.nodes)
     largest_peak = max(G.nodes)
-    backbone = nx.shortest_path(G, source=largest_peak, target=smallest_peak)
-    backbone_edges = list(zip(backbone[:-1], backbone[1:]))
+    try:
+        backbone = nx.shortest_path(G, source=largest_peak, target=smallest_peak)
+        backbone_edges = list(zip(backbone[:-1], backbone[1:]))
+    except:
+        backbone_edges = []
 
     edge_x, edge_y, edge_colors, opacities = [], [], [], []
     for u, v in G.edges():

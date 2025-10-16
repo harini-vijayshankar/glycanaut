@@ -111,13 +111,20 @@ def assign_polysaccharides(
             if diff >= df_poly["m/z"].min():
                 poly_sacc = df_poly[abs(df_poly["m/z"] - diff) < mass_tol]
                 if not poly_sacc.empty:
-                    poly_row = poly_sacc.iloc[0]
-                    df_diffs.loc[idx, "Assigned"] = poly_row["Name"]
-                    df_diffs.loc[idx, "Assigned Symbol"] = poly_row["Symbol"]
-                    df_diffs.loc[idx, "Assigned Mass"] = poly_row["m/z"]
-                    df_diffs.loc[idx, "Ion Type"] = poly_row["Ion Type"]
-                    df_diffs.loc[idx, "Length"] = poly_row["length"]
-                    df_diffs.loc[idx, "Type"] = poly_row["Type"]
+                    assigned_names = ", ".join(poly_sacc["Name"].astype(str))
+                    assigned_symbols = ", ".join(poly_sacc["Symbol"].astype(str))
+                    assigned_mass = poly_sacc["m/z"].iloc[-1]
+                    assigned_ion = poly_sacc["Ion Type"].iloc[-1]
+                    assigned_len = poly_sacc["length"].iloc[-1]
+                    assigned_type = poly_sacc["Type"].iloc[-1]
+
+                    df_diffs.loc[idx, "Assigned"] = assigned_names
+                    df_diffs.loc[idx, "Assigned Symbol"] = assigned_symbols
+                    df_diffs.loc[idx, "Assigned Mass"] = assigned_mass
+                    df_diffs.loc[idx, "Ion Type"] = assigned_ion
+                    df_diffs.loc[idx, "Length"] = assigned_len
+                    df_diffs.loc[idx, "Type"] = assigned_type
+
     df_diffs_assigned = df_diffs[df_diffs["Assigned Mass"] != 0].reset_index(drop=True)
     df_diffs_unassigned = df_diffs[df_diffs["Assigned Mass"] == 0].reset_index(
         drop=True

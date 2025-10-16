@@ -88,7 +88,7 @@ with st.sidebar.expander("Parameters", expanded=st.session_state.expander_open):
         use_mods = st.checkbox("Use modifications", value=False)
         use_b_y = st.checkbox("Detect B / Y ions", value=False)
         # normalise_charge_state = st.checkbox("Normalise charge state", value=False)
-        
+
         with st.sidebar:
             submit_button = st.form_submit_button("Analyse")
 
@@ -138,6 +138,7 @@ st.markdown('<h1 style="color: #669673;">Glycanaut</h1>', unsafe_allow_html=True
 
 if submit_button and not uploaded_spectrum_file:
     st.error("No file uploaded!")
+    st.stop()
 
 if submit_button:
     # Analyse spectrum
@@ -203,7 +204,7 @@ if submit_button:
             st.error("Graph is empty.")
         else:
             st.write(
-                "Little green dots represent peaks. The green path highlighted shows the shortest path between the largest and smallest peaks."
+                "Little green dots represent peaks. If found, the green highlighted path shows the shortest path between the largest and smallest peaks."
             )
             st.plotly_chart(
                 plotting.plot_peak_diff_graph(df_diffs_assigned),
