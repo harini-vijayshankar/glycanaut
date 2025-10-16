@@ -168,8 +168,9 @@ if submit_button:
 
         st.markdown("##### Overview of peak differences")
         st.plotly_chart(plotting.plot_peak_diff_histogram(df_diffs, df_diffs_assigned))
-
+    
         st.markdown("##### Assigned peak differences")
+        df_diffs_assigned = df_diffs_assigned.reset_index()
         st.dataframe(df_diffs_assigned)
 
         with st.expander("Unassigned peak differences", expanded=False):
@@ -178,11 +179,16 @@ if submit_button:
         with st.expander("Unmatched peaks", expanded=False):
             st.dataframe(df_unmatched)
 
-        st.markdown("##### Peak losses")
-        st.write("Little green dots represent peaks. The green path highlighted shows the shortest path between the largest and smallest peaks.")
-        st.plotly_chart(
-            plotting.plot_peak_diff_graph(df_diffs_assigned), use_container_width=True
-        )
+        st.markdown("##### Peak difference graph")
+        if len(df_diffs_assigned) > 30:
+            st.error("Graph too big :(")
+        elif len(df_diffs_assigned) < 2:
+            st.error("Graph is empty.")
+        else:
+            st.write("Little green dots represent peaks. The green path highlighted shows the shortest path between the largest and smallest peaks.")
+            st.plotly_chart(
+                plotting.plot_peak_diff_graph(df_diffs_assigned), use_container_width=True
+            )
 
 else:
     st.info("Upload a spectrum file and click Analyse to begin.")

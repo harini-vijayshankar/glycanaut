@@ -75,8 +75,8 @@ def generate_polysaccharides(
         }
         for mono_sacc in poly_sacc:
             df_mono_sacc = df_mono.loc[mono_sacc]
-            item["name"] += df_mono_sacc.name + " - "
-            item["symbol"] += df_mono_sacc["symbol"] + " - "
+            item["name"] += df_mono_sacc.name + " + "
+            item["symbol"] += df_mono_sacc["symbol"] + " + "
             item["m/z"] += df_mono_sacc["m/z"]
             item["ion_type"] += df_mono_sacc["ion_type"]
         item["name"] = item["name"][:-3]
@@ -150,9 +150,9 @@ def compute_peak_differences(
         else:
             assigned = ("Too small", "", 0, "", "")
         diff_dict |= {
+            "Assigned Mass": assigned[2],
             "Assigned": assigned[0],
             "Assigned Symbol": assigned[1],
-            "Assigned Mass": assigned[2],
             "Ion Type": assigned[3],
             "Type": assigned[4],
             "Length": 1,
@@ -167,7 +167,7 @@ def compute_peak_differences(
             df_diffs, df_mono, length, mass_tol
         )
         df_diffs_unassigned = df_diffs_unassigned.drop(
-            columns=["Assigned", "Assigned Mass", "Assigned", "Ion Type", "Type"]
+            columns=["Assigned", "Assigned Mass", "Assigned", "Ion Type", "Type", "Length", "Assigned Symbol"]
         )
         df_unmatched = df[
             ~df["m/z"].isin(df_diffs_assigned["Peak 1"])
