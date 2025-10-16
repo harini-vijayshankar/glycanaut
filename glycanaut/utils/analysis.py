@@ -4,6 +4,7 @@ from typing import Tuple, List
 import itertools
 from . import mono
 
+
 def prune_isotopes(df: pd.DataFrame, isotope_tol: float = 1.0) -> pd.DataFrame:
     """
     If isotopes within prescribed tolerance exist, retain only that with the smallest m/z.
@@ -79,11 +80,13 @@ def generate_polysaccharides(
             item["symbol"] += df_mono_sacc["symbol"] + " + "
             item["m/z"] += df_mono_sacc["m/z"]
             item["ion_type"] += df_mono_sacc["ion_type"]
+        
         item["name"] = item["name"][:-3]
         item["symbol"] = item["symbol"][:-3]
         item["length"] = len(poly_sacc)
         item["type"] = "Polysaccharide"
         data.append(item)
+    
     return pd.DataFrame(data)
 
 
@@ -122,8 +125,13 @@ def assign_polysaccharides(
     return df_diffs_assigned, df_diffs_unassigned
 
 
-def compute_peak_differences(
-    df: pd.DataFrame, df_mono: pd.DataFrame, mass_tol: float, length: int = 1, use_mods: bool = False, use_b_y: bool = False
+def analyse_spectrum(
+    df: pd.DataFrame,
+    df_mono: pd.DataFrame,
+    mass_tol: float,
+    length: int = 1,
+    use_mods: bool = False,
+    use_b_y: bool = False,
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Compute peak differences for input spectrum and assign wherever possible.
@@ -144,7 +152,13 @@ def compute_peak_differences(
             mono_sacc = df_mono[abs(df_mono["m/z"] - diff) < mass_tol]
             if not mono_sacc.empty:
                 row = mono_sacc.iloc[0]
-                assigned = (row["name"], row["symbol"], row["m/z"], row["ion_type"], row["type"])
+                assigned = (
+                    row["name"],
+                    row["symbol"],
+                    row["m/z"],
+                    row["ion_type"],
+                    row["type"],
+                )
             else:
                 assigned = ("No match", "", 0, "", "")
         else:
@@ -167,7 +181,15 @@ def compute_peak_differences(
             df_diffs, df_mono, length, mass_tol
         )
         df_diffs_unassigned = df_diffs_unassigned.drop(
-            columns=["Assigned", "Assigned Mass", "Assigned", "Ion Type", "Type", "Length", "Assigned Symbol"]
+            columns=[
+                "Assigned",
+                "Assigned Mass",
+                "Assigned",
+                "Ion Type",
+                "Type",
+                "Length",
+                "Assigned Symbol",
+            ]
         )
         df_unmatched = df[
             ~df["m/z"].isin(df_diffs_assigned["Peak 1"])

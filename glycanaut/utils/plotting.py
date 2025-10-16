@@ -78,7 +78,7 @@ def plot_peak_diff_histogram(df_diffs: pd.DataFrame, df_diffs_assigned: pd.DataF
         x=unassigned["Peak Difference"],
         y=unassigned["Count"],
         name="Not assigned",
-        marker_color="white",
+        marker_color="#d3e3d7",
         hovertemplate=
             'Peak Difference: %{x}<br>' +
             'Count: %{y}<br>' +

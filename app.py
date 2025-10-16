@@ -5,28 +5,15 @@ from glycanaut.utils import plotting, analysis, mono
 
 # ----------------------- Layout config ----------------------- #
 
-st.set_page_config(
-    page_title="Glycanaut",
-    page_icon="🍩",    
-    layout="wide"
-)
-
+st.set_page_config(page_title="Glycanaut", page_icon="🍩", layout="wide")
 st.markdown(
     """
     <style>
-        [data-testid="stSidebar"] {
-            min-width: 25%;
-            max-width: 25%;
-            padding-top: 0rem;
-        }
         .block-container {
-            padding-left: 2rem;
-            padding-right: 2rem;
-            padding-top: 2rem;
+            padding-left: 3rem;
+            padding-right: 3rem;
+            padding-top: 3rem;
         }
-        [data-testid="stSidebarCollapseButton"] {
-            display: none
-        
     </style>
 """,
     unsafe_allow_html=True,
@@ -44,22 +31,36 @@ with st.sidebar.expander("(Optional) Configure SNFG Reference", expanded=False):
         "Upload monosaccharide reference file", type=["json"]
     )
 
+# Spectrum file upload only explicitly supports xls at the moment.
 uploaded_spectrum_file = st.sidebar.file_uploader("Upload spectrum file", type=["xlsx"])
 xls_sheet_name = st.sidebar.empty()
 
+# Show analysis parameters
 with st.sidebar.expander("Parameters", expanded=st.session_state.expander_open):
     with st.form("process_form"):
-        m_z_range_c = st.empty()
-        with m_z_range_c.container():
-            min_m_z = 0 if "m_z_range_min" not in st.session_state else st.session_state.m_z_range_min
-            max_m_z = 5000 if "m_z_range_max" not in st.session_state else st.session_state.m_z_range_max
-            m_z_range_val = (min_m_z, max_m_z) if "m_z_range" not in st.session_state else st.session_state.m_z_range
+        m_z_range_outer = st.empty()
+        with m_z_range_outer.container():
+            min_m_z = (
+                0
+                if "m_z_range_min" not in st.session_state
+                else st.session_state.m_z_range_min
+            )
+            max_m_z = (
+                5000
+                if "m_z_range_max" not in st.session_state
+                else st.session_state.m_z_range_max
+            )
+            m_z_range_val = (
+                (min_m_z, max_m_z)
+                if "m_z_range" not in st.session_state
+                else st.session_state.m_z_range
+            )
             m_z_range = st.slider(
-                    "m/z Range",
-                    min_value=min_m_z,
-                    max_value=max_m_z,
-                    value=m_z_range_val,
-                )
+                "m/z Range",
+                min_value=min_m_z,
+                max_value=max_m_z,
+                value=m_z_range_val,
+            )
         threshold = st.slider(
             "Threshold %", min_value=1, max_value=99, value=15, step=1
         )
@@ -89,6 +90,7 @@ with st.sidebar.expander("Parameters", expanded=st.session_state.expander_open):
         with st.sidebar:
             submit_button = st.form_submit_button("Analyse")
 
+# Process spectrum file
 if uploaded_spectrum_file:
     df = None
     if uploaded_spectrum_file.name.endswith(".csv"):
@@ -112,7 +114,7 @@ if uploaded_spectrum_file:
     df = df.rename(columns={df.columns[0]: "m/z", df.columns[1]: "Intensity"})
     df = df[pd.to_numeric(df.iloc[:, 0], errors="coerce").notna()]
 
-    with m_z_range_c.container():
+    with m_z_range_outer.container():
         try:
             min_m_z = np.round(df["m/z"].min()).astype(int)
             max_m_z = np.round(df["m/z"].max()).astype(int)
@@ -136,7 +138,7 @@ if submit_button and not uploaded_spectrum_file:
     st.error("No file uploaded!")
 
 if submit_button:
-    top, bottom = st.container(), st.container()
+    # Analyse spectrum
     df_mono = (
         mono.make_df_mono()
         if not uploaded_mono_file
@@ -145,32 +147,45 @@ if submit_button:
     df = analysis.preprocess_data(
         df, threshold=threshold, m_z_range=m_z_range, isotope_tol=isotope_tol
     )
-    df_diffs, df_diffs_assigned, df_diffs_unassigned, df_unmatched = analysis.compute_peak_differences(
-        df, df_mono, mass_tol=mass_tol, length=length, use_mods=use_mods, use_b_y=use_b_y
+    df_diffs, df_diffs_assigned, df_diffs_unassigned, df_unmatched = (
+        analysis.analyse_spectrum(
+            df,
+            df_mono,
+            mass_tol=mass_tol,
+            length=length,
+            use_mods=use_mods,
+            use_b_y=use_b_y,
+        )
     )
-
     if df_diffs is None:
-        st.error("No peaks found. Check the spectrum file / widen the m/z range / reduce the threshold and try again.")
+        st.error(
+            "No peaks found. Check the spectrum file / widen the m/z range / reduce the threshold and try again."
+        )
         st.stop()
 
+    # Show results
+    top, bottom = st.container(), st.container()
+
     with top:
+        # Render mass spectrum
         st.subheader("Mass spectrum")
         st.plotly_chart(plotting.plot_mass_spectrum(df), use_container_width=True)
 
     with bottom:
+        # Show reference unit tables
         with st.expander("SNFG Reference", expanded=False):
             st.dataframe(df_mono)
 
         with st.expander("Modifications", expanded=False):
             st.dataframe(mono.MODS.drop(columns=["ion_type"]))
-            
+
+        # Render spectrum analysis
         st.subheader("MS2 Identification")
 
         st.markdown("##### Overview of peak differences")
         st.plotly_chart(plotting.plot_peak_diff_histogram(df_diffs, df_diffs_assigned))
-    
+
         st.markdown("##### Assigned peak differences")
-        df_diffs_assigned = df_diffs_assigned.reset_index()
         st.dataframe(df_diffs_assigned)
 
         with st.expander("Unassigned peak differences", expanded=False):
@@ -185,9 +200,12 @@ if submit_button:
         elif len(df_diffs_assigned) < 2:
             st.error("Graph is empty.")
         else:
-            st.write("Little green dots represent peaks. The green path highlighted shows the shortest path between the largest and smallest peaks.")
+            st.write(
+                "Little green dots represent peaks. The green path highlighted shows the shortest path between the largest and smallest peaks."
+            )
             st.plotly_chart(
-                plotting.plot_peak_diff_graph(df_diffs_assigned), use_container_width=True
+                plotting.plot_peak_diff_graph(df_diffs_assigned),
+                use_container_width=True,
             )
 
 else:
