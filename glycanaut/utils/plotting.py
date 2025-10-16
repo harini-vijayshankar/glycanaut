@@ -41,12 +41,16 @@ def plot_mass_spectrum(df: pd.DataFrame) -> Figure:
     return fig
 
 
-def plot_peak_diff_histogram(df_diffs: pd.DataFrame, df_diffs_assigned: pd.DataFrame) -> Figure:
+def plot_peak_diff_histogram(
+    df_diffs: pd.DataFrame, df_diffs_assigned: pd.DataFrame
+) -> Figure:
     """
     Plot histogram of peak differences and annotate wherever assigned.
     """
     df_diffs["Peak Difference (rounded)"] = df_diffs["Peak Difference"].round(1)
-    counts = df_diffs["Peak Difference (rounded)"].value_counts().sort_index().reset_index()
+    counts = (
+        df_diffs["Peak Difference (rounded)"].value_counts().sort_index().reset_index()
+    )
     counts.columns = ["Peak Difference", "Count"]
 
     assigned_info = (
@@ -57,42 +61,49 @@ def plot_peak_diff_histogram(df_diffs: pd.DataFrame, df_diffs_assigned: pd.DataF
     assigned_info["Peak Difference"] = assigned_info["Peak Difference (rounded)"]
     counts = counts.merge(assigned_info, on="Peak Difference", how="left")
 
-    assigned = counts[counts["Peak Difference"].isin(df_diffs_assigned["Peak Difference"].round(1))]
-    unassigned = counts[~counts["Peak Difference"].isin(df_diffs_assigned["Peak Difference"].round(1))]
+    assigned = counts[
+        counts["Peak Difference"].isin(df_diffs_assigned["Peak Difference"].round(1))
+    ]
+    unassigned = counts[
+        ~counts["Peak Difference"].isin(df_diffs_assigned["Peak Difference"].round(1))
+    ]
 
     fig = go.Figure()
 
-    fig.add_trace(go.Bar(
-        x=assigned["Peak Difference"],
-        y=assigned["Count"],
-        name="Assigned",
-        marker_color="#669673",
-        text=assigned["Assigned"],
-        hovertemplate=
-            'Peak Difference: %{x}<br>' +
-            'Count: %{y}<br>' +
-            'Assigned: %{text}<extra></extra>'
-    ))
+    fig.add_trace(
+        go.Bar(
+            x=assigned["Peak Difference"],
+            y=assigned["Count"],
+            name="Assigned",
+            marker_color="#669673",
+            text=assigned["Assigned"],
+            hovertemplate="Peak Difference: %{x}<br>"
+            + "Count: %{y}<br>"
+            + "Assigned: %{text}<extra></extra>",
+        )
+    )
 
-    fig.add_trace(go.Bar(
-        x=unassigned["Peak Difference"],
-        y=unassigned["Count"],
-        name="Not assigned",
-        marker_color="#d3e3d7",
-        hovertemplate=
-            'Peak Difference: %{x}<br>' +
-            'Count: %{y}<br>' +
-            'Assigned: None<extra></extra>'
-    ))
+    fig.add_trace(
+        go.Bar(
+            x=unassigned["Peak Difference"],
+            y=unassigned["Count"],
+            name="Not assigned",
+            marker_color="#d3e3d7",
+            hovertemplate="Peak Difference: %{x}<br>"
+            + "Count: %{y}<br>"
+            + "Assigned: None<extra></extra>",
+        )
+    )
 
     fig.update_layout(
         xaxis_title="Peak Differences",
         yaxis_title="Count",
         margin=dict(l=40, r=40, t=20, b=40),
-        showlegend=True
+        showlegend=True,
     )
 
     return fig
+
 
 def plot_peak_diff_graph(df_assigned: pd.DataFrame) -> Figure:
     """
@@ -128,18 +139,27 @@ def plot_peak_diff_graph(df_assigned: pd.DataFrame) -> Figure:
         x1, y1 = pos[v]
         edge_x += [x0, x1, None]
         edge_y += [y0, y1, None]
-        edge_colors.append("#669673" if (u,v) in backbone_edges or (v,u) in backbone_edges else "grey")
-        opacities.append(0.8 if (u,v) in backbone_edges or (v,u) in backbone_edges else 0.2)
+        edge_colors.append(
+            "#669673"
+            if (u, v) in backbone_edges or (v, u) in backbone_edges
+            else "grey"
+        )
+        opacities.append(
+            0.8 if (u, v) in backbone_edges or (v, u) in backbone_edges else 0.2
+        )
 
     edge_traces = []
     for i in range(len(G.edges())):
-        edge_traces.append(go.Scatter(
-            x=edge_x[i*3:i*3+2], y=edge_y[i*3:i*3+2],
-            line=dict(width=1, color=edge_colors[i]),
-            hoverinfo='none',
-            opacity=opacities[i],
-            mode='lines'
-        ))
+        edge_traces.append(
+            go.Scatter(
+                x=edge_x[i * 3 : i * 3 + 2],
+                y=edge_y[i * 3 : i * 3 + 2],
+                line=dict(width=1, color=edge_colors[i]),
+                hoverinfo="none",
+                opacity=opacities[i],
+                mode="lines",
+            )
+        )
 
     node_x, node_y, node_text = zip(
         *[(pos[n][0], pos[n][1], str(n)) for n in G.nodes()]

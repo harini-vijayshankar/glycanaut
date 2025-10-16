@@ -1,15 +1,93 @@
 [
-    {"name": "Hexose", "m/z": 180.0707, "symbol_description": "Filled Circle", "symbol": "\u25CF", "type": "Monosaccharide"},
-    {"name": "HexNAc", "m/z": 222.0972, "symbol_description": "Filled Square", "symbol": "\u25A0", "type": "Monosaccharide"},
-    {"name": "Hexuronate", "m/z": 195.14, "symbol_description": "Divided Diamond", "symbol": "\u29EB", "type": "Monosaccharide"},
-    {"name": "Deoxyhexose", "m/z": 165.0757, "symbol_description": "Filled Triangle", "symbol": "\u25B2", "type": "Monosaccharide"},
-    {"name": "DeoxyhexNAc", "m/z": 206.1023, "symbol_description": "Divided Triangle", "symbol": "\u25B2 ᴺᴬᶜ", "type": "Monosaccharide"},
-    {"name": "Di-deoxyhexose", "m/z": 149.16, "symbol_description": "Flat Rectangle", "symbol": "\u25AD", "type": "Monosaccharide"},
-    {"name": "Pentose", "m/z": 151.13, "symbol_description": "Filled Star", "symbol": "\u2605", "type": "Monosaccharide"},
-    {"name": "3-deoxy-nonulosonic acids", "m/z": 269.22, "symbol_description": "Filled Diamond", "symbol": "\u25C6", "type": "Monosaccharide"},
-    {"name": "3,9-dideoxy-nonulosonic acids", "m/z": 251.25, "symbol_description": "Flat Diamond", "symbol": "\u25C7", "type": "Monosaccharide"},
-    {"name": "Glycerophosphogalactose", "m/z": 334.09, "symbol_description": "-", "symbol": "◍", "type": "Monosaccharide"},
-    {"name": "Glycerophosphoacetate", "m/z": 376.10, "symbol_description": "-", "symbol": "◎", "type": "Monosaccharide"},
-    {"name": "Unknown", "m/z": -1, "symbol_description": "Flat Hexagon", "symbol": "\u2B22", "type": "Monosaccharide"},
-    {"name": "Assigned", "m/z": -1, "symbol_description": "Pentagon", "symbol": "\u2B1F", "type": "Monosaccharide"}
+    {
+        "Name": "Hexose",
+        "m/z": 180.0707,
+        "Symbol Description": "Filled Circle",
+        "Symbol": "\u25cf",
+        "Type": "Monosaccharide"
+    },
+    {
+        "Name": "HexNAc",
+        "m/z": 222.0972,
+        "Symbol Description": "Filled Square",
+        "Symbol": "\u25a0",
+        "Type": "Monosaccharide"
+    },
+    {
+        "Name": "Hexuronate",
+        "m/z": 195.14,
+        "Symbol Description": "Divided Diamond",
+        "Symbol": "\u29eb",
+        "Type": "Monosaccharide"
+    },
+    {
+        "Name": "Deoxyhexose",
+        "m/z": 165.0757,
+        "Symbol Description": "Filled Triangle",
+        "Symbol": "\u25b2",
+        "Type": "Monosaccharide"
+    },
+    {
+        "Name": "DeoxyhexNAc",
+        "m/z": 206.1023,
+        "Symbol Description": "Divided Triangle",
+        "Symbol": "\u25b2 ᴺᴬᶜ",
+        "Type": "Monosaccharide"
+    },
+    {
+        "Name": "Di-deoxyhexose",
+        "m/z": 149.16,
+        "Symbol Description": "Flat Rectangle",
+        "Symbol": "\u25ad",
+        "Type": "Monosaccharide"
+    },
+    {
+        "Name": "Pentose",
+        "m/z": 151.13,
+        "Symbol Description": "Filled Star",
+        "Symbol": "\u2605",
+        "Type": "Monosaccharide"
+    },
+    {
+        "Name": "3-deoxy-nonulosonic acids",
+        "m/z": 269.22,
+        "Symbol Description": "Filled Diamond",
+        "Symbol": "\u25c6",
+        "Type": "Monosaccharide"
+    },
+    {
+        "Name": "3,9-dideoxy-nonulosonic acids",
+        "m/z": 251.25,
+        "Symbol Description": "Flat Diamond",
+        "Symbol": "\u25c7",
+        "Type": "Monosaccharide"
+    },
+    {
+        "Name": "Glycerophosphogalactose",
+        "m/z": 334.09,
+        "Symbol Description": "-",
+        "Symbol": "◍",
+        "Type": "Monosaccharide"
+    },
+    {
+        "Name": "Glycerophosphoacetate",
+        "m/z": 376.10,
+        "Symbol Description": "-",
+        "Symbol": "◎",
+        "Type": "Monosaccharide"
+    },
+    {
+        "Name": "Unknown",
+        "m/z": -1,
+        "Symbol Description": "Flat Hexagon",
+        "Symbol": "\u2b22",
+        "Type": "Monosaccharide"
+    },
+    {
+        "Name": "Assigned",
+        "m/z": -1,
+        "Symbol Description": "Pentagon",
+        "Symbol": "\u2b1f",
+        "Type": "Monosaccharide"
+    }
 ]

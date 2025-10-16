@@ -25,7 +25,7 @@ def prune_isotopes(df: pd.DataFrame, isotope_tol: float = 1.0) -> pd.DataFrame:
             for z in charge_states
             if all(abs((1 / z) - diff) <= tol for diff in diffs)
         ]
-        df.loc[i, "z"] = 1 if not matches else matches[0]  # sort later.
+        df.loc[i, "Charge State"] = 1 if not matches else matches[0]
 
     return df.drop(to_drop).reset_index(drop=True)
 
@@ -59,7 +59,7 @@ def generate_polysaccharides(
     """
     Generate n-length combinations of monosaccharides in the list provided.
     """
-    df_mono.set_index("name", inplace=True)
+    df_mono.set_index("Name", inplace=True)
     data = []
     polysaccharides = []
     for r in range(2, length + 1):
@@ -68,23 +68,23 @@ def generate_polysaccharides(
         )
     for poly_sacc in polysaccharides:
         item = {
-            "name": "",
-            "symbol": "",
+            "Name": "",
+            "Symbol": "",
             "m/z": 0,
-            "symbol_description": "Polysaccharide",
-            "ion_type": "",
+            "Symbol Description": "Polysaccharide",
+            "Ion Type": "",
         }
         for mono_sacc in poly_sacc:
             df_mono_sacc = df_mono.loc[mono_sacc]
-            item["name"] += df_mono_sacc.name + " + "
-            item["symbol"] += df_mono_sacc["symbol"] + " + "
+            item["Name"] += df_mono_sacc.name + " + "
+            item["Symbol"] += df_mono_sacc["Symbol"] + " + "
             item["m/z"] += df_mono_sacc["m/z"]
-            item["ion_type"] += df_mono_sacc["ion_type"]
+            item["Ion Type"] += df_mono_sacc["Ion Type"]
         
-        item["name"] = item["name"][:-3]
-        item["symbol"] = item["symbol"][:-3]
+        item["Name"] = item["Name"][:-3]
+        item["Symbol"] = item["Symbol"][:-3]
         item["length"] = len(poly_sacc)
-        item["type"] = "Polysaccharide"
+        item["Type"] = "Polysaccharide"
         data.append(item)
     
     return pd.DataFrame(data)
@@ -112,12 +112,12 @@ def assign_polysaccharides(
                 poly_sacc = df_poly[abs(df_poly["m/z"] - diff) < mass_tol]
                 if not poly_sacc.empty:
                     poly_row = poly_sacc.iloc[0]
-                    df_diffs.loc[idx, "Assigned"] = poly_row["name"]
-                    df_diffs.loc[idx, "Assigned Symbol"] = poly_row["symbol"]
+                    df_diffs.loc[idx, "Assigned"] = poly_row["Name"]
+                    df_diffs.loc[idx, "Assigned Symbol"] = poly_row["Symbol"]
                     df_diffs.loc[idx, "Assigned Mass"] = poly_row["m/z"]
-                    df_diffs.loc[idx, "Ion Type"] = poly_row["ion_type"]
+                    df_diffs.loc[idx, "Ion Type"] = poly_row["Ion Type"]
                     df_diffs.loc[idx, "Length"] = poly_row["length"]
-                    df_diffs.loc[idx, "Type"] = poly_row["type"]
+                    df_diffs.loc[idx, "Type"] = poly_row["Type"]
     df_diffs_assigned = df_diffs[df_diffs["Assigned Mass"] != 0].reset_index(drop=True)
     df_diffs_unassigned = df_diffs[df_diffs["Assigned Mass"] == 0].reset_index(
         drop=True
@@ -153,11 +153,11 @@ def analyse_spectrum(
             if not mono_sacc.empty:
                 row = mono_sacc.iloc[0]
                 assigned = (
-                    row["name"],
-                    row["symbol"],
+                    row["Name"],
+                    row["Symbol"],
                     row["m/z"],
-                    row["ion_type"],
-                    row["type"],
+                    row["Ion Type"],
+                    row["Type"],
                 )
             else:
                 assigned = ("No match", "", 0, "", "")

@@ -5,35 +5,35 @@ H20_MASS = 18.010565
 MODS = pd.DataFrame(
     [
         {
-            "name": "Acetylation",
+            "Name": "Acetylation",
             "m/z": 42.0106,
-            "symbol_description": "Modification",
-            "symbol": "Ac",
-            "ion_type": "",
+            "Symbol Description": "Modification",
+            "Symbol": "Ac",
+            "Ion Type": "",
             "type": "Modification",
         },
         {
-            "name": "Methylation",
+            "Name": "Methylation",
             "m/z": 14.0157,
-            "symbol_description": "Modification",
-            "symbol": "Me",
-            "ion_type": "",
+            "Symbol Description": "Modification",
+            "Symbol": "Me",
+            "Ion Type": "",
             "type": "Modification",
         },
         {
-            "name": "Phosphorylation",
+            "Name": "Phosphorylation",
             "m/z": 79.9663,
-            "symbol_description": "Modification",
-            "symbol": "Ph",
-            "ion_type": "",
+            "Symbol Description": "Modification",
+            "Symbol": "Ph",
+            "Ion Type": "",
             "type": "Modification",
         },
         {
-            "name": "Sulfonation",
+            "Name": "Sulfonation",
             "m/z": 79.9568,
-            "symbol_description": "Modification",
-            "symbol": "Su",
-            "ion_type": "",
+            "Symbol Description": "Modification",
+            "Symbol": "Su",
+            "Ion Type": "",
             "type": "Modification",
         },
     ]
@@ -47,7 +47,7 @@ def make_df_mono(uploaded_file: str = "mono.json") -> pd.DataFrame:
     df_mono = pd.read_json(uploaded_file)
     df_mono = df_mono[df_mono["m/z"] > 0]
     df_mono["m/z"] = (df_mono["m/z"] - H20_MASS).round(2)
-    df_mono["ion_type"] = ""
+    df_mono["Ion Type"] = ""
     return df_mono
 
 
@@ -59,13 +59,13 @@ def make_b_y_df_mono(df_mono: pd.DataFrame) -> pd.DataFrame:
     df_mono_y = df_mono.copy()
     df_mono_y["m/z"] = (df_mono_y["m/z"] + H20_MASS).round(2)
 
-    df_mono_y["symbol"] += " ʸ"
-    df_mono_y["name"] += " (Y)"
-    df_mono_y["ion_type"] = "Y"
+    df_mono_y["Symbol"] += " ʸ"
+    df_mono_y["Name"] += " (Y)"
+    df_mono_y["Ion Type"] = "Y"
 
-    df_mono_b["symbol"] += " ᵇ"
-    df_mono_b["name"] += " (B)"
-    df_mono_b["ion_type"] = "B"
+    df_mono_b["Symbol"] += " ᵇ"
+    df_mono_b["Name"] += " (B)"
+    df_mono_b["Ion Type"] = "B"
 
     df_mono = pd.concat([df_mono_b, df_mono_y], ignore_index=True)
 

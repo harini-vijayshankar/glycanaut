@@ -87,6 +87,8 @@ with st.sidebar.expander("Parameters", expanded=st.session_state.expander_open):
         )
         use_mods = st.checkbox("Use modifications", value=False)
         use_b_y = st.checkbox("Detect B / Y ions", value=False)
+        # normalise_charge_state = st.checkbox("Normalise charge state", value=False)
+        
         with st.sidebar:
             submit_button = st.form_submit_button("Analyse")
 
@@ -177,7 +179,7 @@ if submit_button:
             st.dataframe(df_mono)
 
         with st.expander("Modifications", expanded=False):
-            st.dataframe(mono.MODS.drop(columns=["ion_type"]))
+            st.dataframe(mono.MODS.drop(columns=["Ion Type"]))
 
         # Render spectrum analysis
         st.subheader("MS2 Identification")
