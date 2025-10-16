@@ -175,12 +175,12 @@ if submit_button:
         st.plotly_chart(plotting.plot_mass_spectrum(df), use_container_width=True)
 
     with bottom:
-        # Show reference unit tables
+        # Show reference tables
         with st.expander("SNFG Reference", expanded=False):
             st.dataframe(df_mono)
 
         with st.expander("Modifications", expanded=False):
-            st.dataframe(mono.MODS.drop(columns=["Ion Type"]))
+            st.dataframe(mono.MODS.drop(columns=["Ion Type", "Type"]))
 
         # Render spectrum analysis
         st.subheader("MS2 Identification")
