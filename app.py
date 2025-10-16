@@ -180,7 +180,7 @@ if submit_button:
             st.dataframe(df_mono)
 
         with st.expander("Modifications", expanded=False):
-            st.dataframe(mono.MODS.drop(columns=["Ion Type", "Type"]))
+            st.dataframe(mono.MODS.drop(columns=["Ion Type"]))
 
         # Render spectrum analysis
         st.subheader("MS2 Identification")
